@@ -22,7 +22,7 @@
 ### pb CLI
 
 ```
-pb [options] [processor:]target...
+pb [options] [processor:]target... [-- run args...]
 
 Options:
   -j NUM        Maximum number of concurrent jobs
@@ -31,17 +31,17 @@ Options:
   -r REL_TYPE   Release type (one of: release, debug, relwithdbg)
   -v            Print version and exit
 
-Actions:
+Targets:
   all           Builds all targets
   clean         Cleans all targets
   install       Installs given targets
   TARGET_NAME   Builds given single target
 
 Processors:
-  build         Compiles given actions (default processor when omitted).
-  dep           Creates dep packages for given result of given build targets.
-  run           Ensures freshness of given target and executes it.
-  test          Ensures freshness of given target and runs its tests.
+  build         Compiles given targets (default).
+  deb           Creates .deb packages for given target on current platform.
+  run           Executes given target. Optional cmd args can be passed.
+  test          Runs tests for given target.
 
 Examples:
 
@@ -57,8 +57,8 @@ Examples:
   # builds all dependencies and then runs given target
   pb run:examples/http-hello1
 
-  # generates all .dep files for the current operating system (ie. Ubuntu 14.04)
-  pb dep:all -r release
+  # generates all .deb files for the current operating system (ie. Ubuntu 14.04)
+  pb deb:all -r release
 ```
 
 ### .pb File Examples
