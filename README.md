@@ -70,23 +70,48 @@ Examples:
 # libxzero/libxzero.pb
 package "libxero-dev"
 
+# custom target that genreates variables based on exitense of given functions
+target "system-funcs" as c_func {
+  src [
+    "sendfile"            # -> HAVE_SENDFILE
+    "pipe2"               # ...
+    "execl"
+  ]
+]
+
+# custom target that generates variables based on the existense of given system
+# header files
+target "system-headers" as c_header {
+  src [
+    "sys/sendfile.h"      # -> HAVE_SYS_SENDFILE_H
+    "linux/inotify.h"     # ...
+  ]
+]
+
 # install some headers
-target "xzero" as fs {
+target "xzero-dev" as fs {
   src [
     include/xzero/HttpChannel.h
     include/xzero/HttpRequest.h
     include/xzero/HttpResponse.h
   ]
-  src with "m4" [
+
+  # given file(s) must be processed with given processor
+  src with "subst" [
     include/xzero/sysconfig.h
+  ]
+
+  link [
+    "target:system-funcs"
+    "system-funcs"             # same as "target:system-funcs"
   ]
 
   install_prefix "include/xzero"
 }
 
 target "pkgconfig" as fs {
-  # files should be processed with m4
-  src with "m4" [
+  # files should be processed with "subst" (env-var substitution)
+  src with "subst" [
     libxzero.pc
   ]
 
@@ -122,15 +147,20 @@ target "xzero" as library {
 
   # links against the given (prior) declared external packages
   link [
-    "pthread"
-    "ev"
-    "zlib"
+    ":pthread"
+    ":ev"
+    ":zlib"
+    "target:system-headers"
+    "system-funcs"             # same as "target:system-funcs"
   ]
 
+  # test source files for this target
   test [
     "test/http/HttpChannel-test.cc"
     "test/http/Http1-test.cc"
   ]
+
+  # dependencies for the test of this target
   test_link [
     "gtest"
   ]
