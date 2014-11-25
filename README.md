@@ -18,6 +18,8 @@
     * should support cache buster and manifest generations/generators.
   * Scala/Java
     * target type: `jar`
+* the run processor actually watches over all dependencies while running
+  and restarts given target in case something was touched.
 
 ### pb CLI
 
@@ -42,6 +44,7 @@ Processors:
   deb           Creates .deb packages for given target on current platform.
   run           Executes given target. Optional cmd args can be passed.
   test          Runs tests for given target.
+  autotool      Generates autoconf/automake/libtool target files.
 
 Examples:
 
@@ -74,17 +77,18 @@ target "xzero" as fs {
     include/xzero/HttpRequest.h
     include/xzero/HttpResponse.h
   ]
+  src with "m4" [
+    include/xzero/sysconfig.h
+  ]
 
   install_prefix "include/xzero"
 }
 
 target "pkgconfig" as fs {
-  src [
+  # files should be processed with m4
+  src with "m4" [
     libxzero.pc
   ]
-
-  # files should be processed with
-  processor "m4"
 
   # can contain variables, such as @PREFIX@ etc.
   install_prefix "lib/pkgconfig"
@@ -95,12 +99,15 @@ target "pkgconfig" as fs {
 # libxzero/libxzero.pb
 package "libxzero"
 
+# hard dependencies
 depends [
   ":pthread"
   "pkgconfig:ev"
 ]
 
+# soft/optional dependencies
 uses [
+  # uses pkgconfig to detect the package
   "pkgconfig:zlib"
 ]
 
@@ -112,13 +119,20 @@ target "xzero" as library {
     "src/http/v1/HttpConnection.cc"
     "src/http/mock/MockConnection.cc"
   ]
+
+  # links against the given (prior) declared external packages
   link [
     "pthread"
     "ev"
+    "zlib"
   ]
+
   test [
     "test/http/HttpChannel-test.cc"
     "test/http/Http1-test.cc"
+  ]
+  test_link [
+    "gtest"
   ]
 }
 
