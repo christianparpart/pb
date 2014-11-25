@@ -2,16 +2,22 @@
 
 * a build process is defined by package file(s)
 * package files are declarative, thus, order does not matter
-* package files and with `.bp`.
+* package files end with `.bp`.
 * should provide a fast way to build complex dependencies
 * support high build-time concurrency within one runtime process (e.g. not forking)
 * pb files are located in project root (searched from cwd towards rootdir)
 * pb manages intermediate and target files in its own directory
-* easy specification of dependencies
+* easy specification of optional & required dependencies
 * supports different target builders
   * C, C++ must be supported in initial milestone (immediate usecases)
+    * executable files (target type: `executable`)
+    * shared objects (target type: `library`)
+    * static libraries (target type: `archive`)
   * asset bundling (minifying, merging, uglifying) next step
+    * target type: hmm... maybe assets?
+    * should support cache buster and manifest generations/generators.
   * Scala/Java
+    * target type: `jar`
 
 ### pb CLI
 
